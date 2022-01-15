@@ -1,12 +1,43 @@
-import { Box, Button, Checkbox, Flex, Input, Text } from "@chakra-ui/react"
-import { ArticlesIcon, TwitterIcon, YoutubeIcon } from "app/core/icons"
+import { Box, Button, Checkbox, Flex, Image, Input, Text } from "@chakra-ui/react"
+import {
+  ArticlesIcon,
+  LikeIcon,
+  ReplyIcon,
+  RetweetIcon,
+  ShareIcon,
+  TwitterIcon,
+  YoutubeIcon,
+} from "app/core/icons"
 import Layout from "app/core/layouts/Layout"
+import { getTweetDate } from "app/utils/formatters"
 import { BlitzPage } from "blitz"
+import dayjs, { Dayjs } from "dayjs"
 import { useCallback, useEffect, useState } from "react"
+
+interface Tweet {
+  text: string
+  created_at: Dayjs
+  user: {
+    name: string
+    username: string
+    profile_image_url: string
+  }
+  public_metrics: {
+    like_count: number
+    quote_count: number
+    reply_count: number
+    retweet_count: number
+  }
+}
+
+interface PublicMetricsItemProps {
+  count: string
+}
 
 interface FiltersListProps {
   title: string
 }
+
 interface FiltersOptionProps {
   title: string
   checked: boolean
@@ -47,22 +78,36 @@ const FiltersOption: React.FC<FiltersOptionProps> = ({ title, checked, toggle, c
   )
 }
 
+const PublicMetricsItem: React.FC<PublicMetricsItemProps> = ({ count, children }) => {
+  return (
+    <Flex alignItems={"center"} pr="8">
+      {children}
+      {count !== "0" && (
+        <Text ml="3" color={"gray.500"} fontSize={"sm"}>
+          {count}
+        </Text>
+      )}
+    </Flex>
+  )
+}
+
 const Home: BlitzPage = () => {
   const [twitterChecked, setTwitterChecked] = useState(true)
   const [articlesChecked, setArticlesChecked] = useState(true)
   const [youtubeChecked, setYoutubeChecked] = useState(true)
   const [tweetUrl, setTweetUrl] = useState("")
+  const [tweet, setTweet] = useState<Tweet>()
 
   const getTweet = useCallback(async () => {
-    console.log("laskdjsalkjd")
     const response = await fetch("/api/twitter?" + new URLSearchParams({ url: tweetUrl }))
 
-    console.log(await response.json())
+    const tweet = await response.json()
+    setTweet({ ...tweet, created_at: dayjs(tweet?.created_at) })
   }, [tweetUrl])
 
   return (
     <Flex bg={"gray.800"} w="100vw" h="100vh" py="8" px="16">
-      <Box flex={1}>
+      <Box minWidth={"20%"} flex={1}>
         <Header />
         <FiltersList title="APPS">
           <FiltersOption
@@ -94,8 +139,8 @@ const Home: BlitzPage = () => {
           </FiltersOption>
         </FiltersList>
       </Box>
-      <Box flex={4}>
-        <Flex flexDirection={"column"} alignItems={"flex-end"}>
+      <Box maxWidth={"80%"} flex={4}>
+        <Flex height={"max-content"} flexDirection={"column"} alignItems={"flex-end"}>
           <Input
             value={tweetUrl}
             onChange={(event) => {
@@ -106,6 +151,48 @@ const Home: BlitzPage = () => {
             Submit
           </Button>
         </Flex>
+        {tweet && (
+          <Box maxWidth={"50%"} width={"max-content"}>
+            <Flex alignItems={"start"}>
+              <Image src={tweet.user.profile_image_url} alt="profile" borderRadius={"3xl"} />
+              <Box>
+                <Flex alignItems={"center"} ml="3">
+                  <Text fontWeight={"semibold"}>{tweet.user.name} </Text>
+                  <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"} ml="2">
+                    @{tweet.user.username}
+                  </Text>
+                  <Text mx="1" color={"gray.500"} fontSize={"xx-small"} fontWeight={"medium"}>
+                    •
+                  </Text>
+                  <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"}>
+                    {getTweetDate(tweet.created_at)}
+                  </Text>
+                </Flex>
+                <Text ml="3" mb="4" whiteSpace={"pre"}>
+                  {tweet.text}
+                </Text>
+                <Flex justifyContent={"space-around"}>
+                  <PublicMetricsItem
+                    count={`${
+                      tweet.public_metrics.quote_count + tweet.public_metrics.retweet_count
+                    }`}
+                  >
+                    <RetweetIcon />
+                  </PublicMetricsItem>
+                  <PublicMetricsItem count={`${tweet.public_metrics.like_count}`}>
+                    <LikeIcon />
+                  </PublicMetricsItem>
+                  <PublicMetricsItem count={`${tweet.public_metrics.reply_count}`}>
+                    <ReplyIcon />
+                  </PublicMetricsItem>
+                  <PublicMetricsItem count="">
+                    <ShareIcon />
+                  </PublicMetricsItem>
+                </Flex>
+              </Box>
+            </Flex>
+          </Box>
+        )}
       </Box>
     </Flex>
   )

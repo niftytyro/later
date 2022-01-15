@@ -1,4 +1,5 @@
 import { Box, Button, Checkbox, Flex, Image, Input, Text } from "@chakra-ui/react"
+import { useCurrentUser } from "app/core/hooks/useCurrentUser"
 import {
   ArticlesIcon,
   LikeIcon,
@@ -9,10 +10,11 @@ import {
   YoutubeIcon,
 } from "app/core/icons"
 import Layout from "app/core/layouts/Layout"
+import getCurrentUser from "app/users/queries/getCurrentUser"
 import { getTweetDate } from "app/utils/formatters"
-import { BlitzPage } from "blitz"
+import { BlitzPage, useMutation, useQuery, useRouter } from "blitz"
 import dayjs, { Dayjs } from "dayjs"
-import { useCallback, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
 
 interface Tweet {
   text: string
@@ -97,6 +99,15 @@ const Home: BlitzPage = () => {
   const [youtubeChecked, setYoutubeChecked] = useState(true)
   const [tweetUrl, setTweetUrl] = useState("")
   const [tweet, setTweet] = useState<Tweet>()
+
+  const user = useCurrentUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (user === null) {
+      router.replace("/login")
+    }
+  }, [router, user])
 
   const getTweet = useCallback(async () => {
     const response = await fetch("/api/twitter?" + new URLSearchParams({ url: tweetUrl }))
@@ -199,6 +210,10 @@ const Home: BlitzPage = () => {
 }
 
 Home.suppressFirstRenderFlicker = true
-Home.getLayout = (page) => <Layout title="Home">{page}</Layout>
+Home.getLayout = (page) => (
+  <Suspense fallback={<Text>Loading...</Text>}>
+    <Layout title="Home">{page}</Layout>
+  </Suspense>
+)
 
 export default Home

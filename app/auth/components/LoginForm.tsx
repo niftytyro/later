@@ -1,8 +1,9 @@
 import { AuthenticationError, Link, useMutation, Routes, PromiseReturnType } from "blitz"
 import { LabeledTextField } from "app/core/components/LabeledTextField"
-import { Form, FORM_ERROR } from "app/core/components/Form"
+import { Form, FORM_ERROR, InputControl } from "app/core/components/Form"
 import login from "app/auth/mutations/login"
 import { Login } from "app/auth/validations"
+import { Box, Flex, Heading, Input, Text } from "@chakra-ui/react"
 
 type LoginFormProps = {
   onSuccess?: (user: PromiseReturnType<typeof login>) => void
@@ -12,8 +13,8 @@ export const LoginForm = (props: LoginFormProps) => {
   const [loginMutation] = useMutation(login)
 
   return (
-    <div>
-      <h1>Login</h1>
+    <Flex w="50%" m={"auto"} h="100%" pt="32" alignItems={"center"} flexDirection={"column"}>
+      <Heading mb="8">Login</Heading>
 
       <Form
         submitText="Login"
@@ -35,19 +36,19 @@ export const LoginForm = (props: LoginFormProps) => {
           }
         }}
       >
-        <LabeledTextField name="email" label="Email" placeholder="Email" />
-        <LabeledTextField name="password" label="Password" placeholder="Password" type="password" />
-        <div>
-          <Link href={Routes.ForgotPasswordPage()}>
-            <a>Forgot your password?</a>
-          </Link>
-        </div>
+        <InputControl name="email" label="Email" />
+        <Box mb={"4"} />
+        <InputControl name="password" label="Password" type="password" />
+        <Box mb={"4"} />
+        <Box textAlign={"right"}>
+          <Link href={Routes.ForgotPasswordPage()}>Forgot your password?</Link>
+        </Box>
       </Form>
 
-      <div style={{ marginTop: "1rem" }}>
+      <Box mt="4">
         Or <Link href={Routes.SignupPage()}>Sign Up</Link>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   )
 }
 

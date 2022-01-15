@@ -45,9 +45,4 @@ export const getTweetDate = (date: Dayjs) => {
   if (secsDiff > 0) {
     return `${secsDiff}s`
   }
-  console.log(secsDiff)
-  console.log(minsDiff)
-  console.log(hoursDiff)
-  console.log(dateDiff)
-  console.log(yearDiff)
 }

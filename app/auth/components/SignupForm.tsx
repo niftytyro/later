@@ -1,8 +1,9 @@
-import { useMutation } from "blitz"
+import { Link, Routes, useMutation } from "blitz"
 import { LabeledTextField } from "app/core/components/LabeledTextField"
-import { Form, FORM_ERROR } from "app/core/components/Form"
+import { Form, FORM_ERROR, InputControl } from "app/core/components/Form"
 import signup from "app/auth/mutations/signup"
 import { Signup } from "app/auth/validations"
+import { Box, Flex, Heading, Input } from "@chakra-ui/react"
 
 type SignupFormProps = {
   onSuccess?: () => void
@@ -12,11 +13,11 @@ export const SignupForm = (props: SignupFormProps) => {
   const [signupMutation] = useMutation(signup)
 
   return (
-    <div>
-      <h1>Create an Account</h1>
+    <Flex w="50%" m={"auto"} h="100%" pt="32" alignItems={"center"} flexDirection={"column"}>
+      <Heading mb="8">Signup</Heading>
 
       <Form
-        submitText="Create Account"
+        submitText="Signup"
         schema={Signup}
         initialValues={{ email: "", password: "" }}
         onSubmit={async (values) => {
@@ -25,18 +26,24 @@ export const SignupForm = (props: SignupFormProps) => {
             props.onSuccess?.()
           } catch (error: any) {
             if (error.code === "P2002" && error.meta?.target?.includes("email")) {
-              // This error comes from Prisma
-              return { email: "This email is already being used" }
+              // TODO error for email field not working
+              return { [FORM_ERROR]: "This email is already being used" }
             } else {
               return { [FORM_ERROR]: error.toString() }
             }
           }
         }}
       >
-        <LabeledTextField name="email" label="Email" placeholder="Email" />
-        <LabeledTextField name="password" label="Password" placeholder="Password" type="password" />
+        <InputControl name="email" label="Email" />
+        <Box mb={"4"} />
+        <InputControl name="password" label="Password" type="password" />
+        <Box mb={"4"} />
       </Form>
-    </div>
+
+      <Box mt="4">
+        Or <Link href={Routes.LoginPage()}>Log in</Link>
+      </Box>
+    </Flex>
   )
 }
 

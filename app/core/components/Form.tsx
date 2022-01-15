@@ -1,7 +1,16 @@
-import { ReactNode, PropsWithoutRef } from "react"
-import { Form as FinalForm, FormProps as FinalFormProps } from "react-final-form"
+import { ReactNode, PropsWithoutRef, HTMLInputTypeAttribute } from "react"
+import { Form as FinalForm, FormProps as FinalFormProps, useField } from "react-final-form"
 import { z } from "zod"
 import { validateZodSchema } from "blitz"
+import {
+  Box,
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Text,
+} from "@chakra-ui/react"
 export { FORM_ERROR } from "final-form"
 
 export interface FormProps<S extends z.ZodType<any, any>>
@@ -13,6 +22,45 @@ export interface FormProps<S extends z.ZodType<any, any>>
   schema?: S
   onSubmit: FinalFormProps<z.infer<S>>["onSubmit"]
   initialValues?: FinalFormProps<z.infer<S>>["initialValues"]
+}
+
+export const Control = ({ name, ...rest }) => {
+  const {
+    meta: { error, touched },
+  } = useField(name, { subscription: { touched: true, error: true } })
+  return <FormControl {...rest} isInvalid={error && touched} />
+}
+
+export const Error = ({ name }) => {
+  const {
+    meta: { error },
+  } = useField(name, { subscription: { error: true } })
+  return <FormErrorMessage>{error}</FormErrorMessage>
+}
+
+export const InputControl = ({
+  name,
+  label,
+  type,
+}: {
+  name: string
+  label: string
+  type?: HTMLInputTypeAttribute
+}) => {
+  const { input, meta } = useField(name)
+  return (
+    <Control name={name} my={4} w="100%">
+      <FormLabel htmlFor={name}>{label}</FormLabel>
+      <Input
+        {...input}
+        isInvalid={meta.error && meta.touched}
+        id={name}
+        placeholder={label}
+        type={type}
+      />
+      <Error name={name} />
+    </Control>
+  )
 }
 
 export function Form<S extends z.ZodType<any, any>>({
@@ -29,8 +77,7 @@ export function Form<S extends z.ZodType<any, any>>({
       validate={validateZodSchema(schema)}
       onSubmit={onSubmit}
       render={({ handleSubmit, submitting, submitError }) => (
-        <form onSubmit={handleSubmit} className="form" {...props}>
-          {/* Form fields supplied as children are rendered here */}
+        <Box w="100%" px="16" as={"form"} onSubmit={handleSubmit}>
           {children}
 
           {submitError && (
@@ -40,17 +87,18 @@ export function Form<S extends z.ZodType<any, any>>({
           )}
 
           {submitText && (
-            <button type="submit" disabled={submitting}>
+            <Button
+              display={"block"}
+              mt="4"
+              ml={"auto"}
+              isLoading={submitting}
+              loadingText="Submitting"
+              type="submit"
+            >
               {submitText}
-            </button>
+            </Button>
           )}
-
-          <style global jsx>{`
-            .form > * + * {
-              margin-top: 1rem;
-            }
-          `}</style>
-        </form>
+        </Box>
       )}
     />
   )

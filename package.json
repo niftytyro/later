@@ -31,12 +31,14 @@
     "blitz": "0.45.0",
     "final-form": "4.20.6",
     "framer-motion": "5.x",
+    "node-fetch": "3.1.0",
     "react": "18.0.0-beta-149b420f6-20211119",
     "react-dom": "18.0.0-alpha-5ca4b0433-20211020",
     "react-final-form": "6.5.7",
     "zod": "3.11.6"
   },
   "devDependencies": {
+    "@types/node-fetch": "3.0.3",
     "@types/preview-email": "2.0.1",
     "@types/react": "17.0.38",
     "eslint": "7.32.0",

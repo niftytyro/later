@@ -1,8 +1,8 @@
-import { Box, Button, Checkbox, Flex, Input, Text, useCheckbox } from "@chakra-ui/react"
+import { Box, Button, Checkbox, Flex, Input, Text } from "@chakra-ui/react"
 import { ArticlesIcon, TwitterIcon, YoutubeIcon } from "app/core/icons"
 import Layout from "app/core/layouts/Layout"
-import { BlitzComponentType, BlitzPage } from "blitz"
-import { useState } from "react"
+import { BlitzPage } from "blitz"
+import { useCallback, useEffect, useState } from "react"
 
 interface FiltersListProps {
   title: string
@@ -51,6 +51,14 @@ const Home: BlitzPage = () => {
   const [twitterChecked, setTwitterChecked] = useState(true)
   const [articlesChecked, setArticlesChecked] = useState(true)
   const [youtubeChecked, setYoutubeChecked] = useState(true)
+  const [tweetUrl, setTweetUrl] = useState("")
+
+  const getTweet = useCallback(async () => {
+    console.log("laskdjsalkjd")
+    const response = await fetch("/api/twitter?" + new URLSearchParams({ url: tweetUrl }))
+
+    console.log(await response.json())
+  }, [tweetUrl])
 
   return (
     <Flex bg={"gray.800"} w="100vw" h="100vh" py="8" px="16">
@@ -88,8 +96,13 @@ const Home: BlitzPage = () => {
       </Box>
       <Box flex={4}>
         <Flex flexDirection={"column"} alignItems={"flex-end"}>
-          <Input />
-          <Button mt="4" size={"lg"}>
+          <Input
+            value={tweetUrl}
+            onChange={(event) => {
+              setTweetUrl(event.target.value)
+            }}
+          />
+          <Button onClick={getTweet} mt="4" size={"lg"}>
             Submit
           </Button>
         </Flex>

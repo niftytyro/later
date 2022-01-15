@@ -154,12 +154,13 @@ const Home: BlitzPage = () => {
         <Flex height={"max-content"} flexDirection={"column"} alignItems={"flex-end"}>
           <Input
             value={tweetUrl}
+            placeholder="https://twitter.com/hey_yogini/status/1482423775283286016?s=20"
             onChange={(event) => {
               setTweetUrl(event.target.value)
             }}
           />
           <Button onClick={getTweet} mt="4" size={"lg"}>
-            Submit
+            Add
           </Button>
         </Flex>
         {tweet && (

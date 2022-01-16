@@ -38,6 +38,8 @@ export const SignupForm = (props: SignupFormProps) => {
         <Box mb={"4"} />
         <InputControl name="password" label="Password" type="password" />
         <Box mb={"4"} />
+        <InputControl name="name" label="Name" type="name" />
+        <Box mb={"4"} />
       </Form>
 
       <Box mt="4">

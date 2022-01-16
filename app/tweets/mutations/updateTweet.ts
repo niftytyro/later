@@ -4,7 +4,7 @@ import { z } from "zod"
 
 const UpdateTweet = z.object({
   id: z.number(),
-  name: z.string(),
+  tweetId: z.string(),
 })
 
 export default resolver.pipe(

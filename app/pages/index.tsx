@@ -112,7 +112,7 @@ const TweetCard: React.FC<{ tweetDb: Tweet }> = ({ tweetDb }) => {
   }, [tweetDb.tweetId])
 
   return (
-    <Box maxWidth={"50%"} width={"max-content"} mb="12">
+    <Box w="100%" borderRadius="xl" mb={"8"} d="inline-block">
       {tweet && (
         <Flex alignItems={"start"}>
           <Image src={tweet.user.profile_image_url} alt="profile" borderRadius={"3xl"} />
@@ -129,10 +129,10 @@ const TweetCard: React.FC<{ tweetDb: Tweet }> = ({ tweetDb }) => {
                 {formatTweetDate(tweet.created_at)}
               </Text>
             </Flex>
-            <Text ml="3" mb="4" whiteSpace={"pre"}>
+            <Text ml="3" mb="4" whiteSpace={"pre-wrap"}>
               {tweet.text}
             </Text>
-            <Flex justifyContent={"space-around"}>
+            <Flex ml="6" justifyContent={"space-around"}>
               <PublicMetricsItem
                 count={`${tweet.public_metrics.quote_count + tweet.public_metrics.retweet_count}`}
               >
@@ -228,9 +228,11 @@ const Home: BlitzPage = () => {
             Add
           </Button>
         </Flex>
-        {tweets.map((each, idx) => (
-          <TweetCard key={idx} tweetDb={each} />
-        ))}
+        <Box width={"100%"} sx={{ columnCount: [1, 2], columnGap: "8px" }}>
+          {tweets.map((each, idx) => (
+            <TweetCard key={idx} tweetDb={each} />
+          ))}
+        </Box>
       </Box>
     </Flex>
   )

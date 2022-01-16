@@ -172,7 +172,7 @@ const Home: BlitzPage = () => {
       router.replace("/login")
     }
     setTweets([...(user?.tweets ?? [])])
-  }, [router, tweets, user])
+  }, [router, user])
 
   const addTweet = useCallback(async () => {
     if (!!user) {

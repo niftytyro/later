@@ -23,7 +23,7 @@ model User {
 
   tokens   Token[]
   sessions Session[]
-  Tweet    Tweet[]
+  tweets   Tweet[]
 }
 
 model Session {
@@ -67,6 +67,7 @@ model Token {
 
 model Tweet {
   id        Int      @id @default(autoincrement())
+  tweetId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])

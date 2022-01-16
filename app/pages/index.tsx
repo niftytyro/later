@@ -1,4 +1,5 @@
 import { Box, Button, Checkbox, Flex, Image, Input, Text } from "@chakra-ui/react"
+import { Tweet } from "@prisma/client"
 import { useCurrentUser } from "app/core/hooks/useCurrentUser"
 import {
   ArticlesIcon,
@@ -10,13 +11,17 @@ import {
   YoutubeIcon,
 } from "app/core/icons"
 import Layout from "app/core/layouts/Layout"
+import createTweet from "app/tweets/mutations/createTweet"
+import getTweet from "app/tweets/queries/getTweet"
 import getCurrentUser from "app/users/queries/getCurrentUser"
-import { getTweetDate } from "app/utils/formatters"
+import { formatTweetDate } from "app/utils/formatters"
+import { tweetIdParser } from "app/utils/twitter"
 import { BlitzPage, useMutation, useQuery, useRouter } from "blitz"
 import dayjs, { Dayjs } from "dayjs"
 import { Suspense, useCallback, useEffect, useState } from "react"
 
-interface Tweet {
+interface TweetHome {
+  id: number
   text: string
   created_at: Dayjs
   user: {
@@ -93,28 +98,88 @@ const PublicMetricsItem: React.FC<PublicMetricsItemProps> = ({ count, children }
   )
 }
 
+const TweetCard: React.FC<{ tweetDb: Tweet }> = ({ tweetDb }) => {
+  const [tweet, setTweet] = useState<TweetHome>()
+
+  useEffect(() => {
+    ;(async () => {
+      const response = await fetch("/api/twitter?" + new URLSearchParams({ url: tweetDb.tweetId }))
+
+      const tweetResponse = await response.json()
+
+      setTweet({ ...tweetResponse, created_at: dayjs(tweetResponse?.created_at) })
+    })()
+  }, [tweetDb.tweetId])
+
+  return (
+    <Box maxWidth={"50%"} width={"max-content"} mb="12">
+      {tweet && (
+        <Flex alignItems={"start"}>
+          <Image src={tweet.user.profile_image_url} alt="profile" borderRadius={"3xl"} />
+          <Box>
+            <Flex alignItems={"center"} ml="3">
+              <Text fontWeight={"semibold"}>{tweet.user.name} </Text>
+              <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"} ml="2">
+                @{tweet.user.username}
+              </Text>
+              <Text mx="1" color={"gray.500"} fontSize={"xx-small"} fontWeight={"medium"}>
+                •
+              </Text>
+              <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"}>
+                {formatTweetDate(tweet.created_at)}
+              </Text>
+            </Flex>
+            <Text ml="3" mb="4" whiteSpace={"pre"}>
+              {tweet.text}
+            </Text>
+            <Flex justifyContent={"space-around"}>
+              <PublicMetricsItem
+                count={`${tweet.public_metrics.quote_count + tweet.public_metrics.retweet_count}`}
+              >
+                <RetweetIcon />
+              </PublicMetricsItem>
+              <PublicMetricsItem count={`${tweet.public_metrics.like_count}`}>
+                <LikeIcon />
+              </PublicMetricsItem>
+              <PublicMetricsItem count={`${tweet.public_metrics.reply_count}`}>
+                <ReplyIcon />
+              </PublicMetricsItem>
+              <PublicMetricsItem count="">
+                <ShareIcon />
+              </PublicMetricsItem>
+            </Flex>
+          </Box>
+        </Flex>
+      )}
+    </Box>
+  )
+}
+
 const Home: BlitzPage = () => {
   const [twitterChecked, setTwitterChecked] = useState(true)
   const [articlesChecked, setArticlesChecked] = useState(true)
   const [youtubeChecked, setYoutubeChecked] = useState(true)
   const [tweetUrl, setTweetUrl] = useState("")
-  const [tweet, setTweet] = useState<Tweet>()
+  const [tweets, setTweets] = useState<Tweet[]>([])
 
   const user = useCurrentUser()
   const router = useRouter()
+
+  const [createTweetMutation] = useMutation(createTweet)
 
   useEffect(() => {
     if (user === null) {
       router.replace("/login")
     }
-  }, [router, user])
+    setTweets([...(user?.tweets ?? [])])
+  }, [router, tweets, user])
 
-  const getTweet = useCallback(async () => {
-    const response = await fetch("/api/twitter?" + new URLSearchParams({ url: tweetUrl }))
-
-    const tweet = await response.json()
-    setTweet({ ...tweet, created_at: dayjs(tweet?.created_at) })
-  }, [tweetUrl])
+  const addTweet = useCallback(async () => {
+    if (!!user) {
+      const tweet = await createTweetMutation({ user: user, tweetId: tweetIdParser(tweetUrl) })
+      setTweets([...tweets, tweet])
+    }
+  }, [createTweetMutation, tweetUrl, tweets, user])
 
   return (
     <Flex bg={"gray.800"} w="100vw" h="100vh" py="8" px="16">
@@ -159,52 +224,13 @@ const Home: BlitzPage = () => {
               setTweetUrl(event.target.value)
             }}
           />
-          <Button onClick={getTweet} mt="4" size={"lg"}>
+          <Button onClick={addTweet} mt="4" size={"lg"}>
             Add
           </Button>
         </Flex>
-        {tweet && (
-          <Box maxWidth={"50%"} width={"max-content"}>
-            <Flex alignItems={"start"}>
-              <Image src={tweet.user.profile_image_url} alt="profile" borderRadius={"3xl"} />
-              <Box>
-                <Flex alignItems={"center"} ml="3">
-                  <Text fontWeight={"semibold"}>{tweet.user.name} </Text>
-                  <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"} ml="2">
-                    @{tweet.user.username}
-                  </Text>
-                  <Text mx="1" color={"gray.500"} fontSize={"xx-small"} fontWeight={"medium"}>
-                    •
-                  </Text>
-                  <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"}>
-                    {getTweetDate(tweet.created_at)}
-                  </Text>
-                </Flex>
-                <Text ml="3" mb="4" whiteSpace={"pre"}>
-                  {tweet.text}
-                </Text>
-                <Flex justifyContent={"space-around"}>
-                  <PublicMetricsItem
-                    count={`${
-                      tweet.public_metrics.quote_count + tweet.public_metrics.retweet_count
-                    }`}
-                  >
-                    <RetweetIcon />
-                  </PublicMetricsItem>
-                  <PublicMetricsItem count={`${tweet.public_metrics.like_count}`}>
-                    <LikeIcon />
-                  </PublicMetricsItem>
-                  <PublicMetricsItem count={`${tweet.public_metrics.reply_count}`}>
-                    <ReplyIcon />
-                  </PublicMetricsItem>
-                  <PublicMetricsItem count="">
-                    <ShareIcon />
-                  </PublicMetricsItem>
-                </Flex>
-              </Box>
-            </Flex>
-          </Box>
-        )}
+        {tweets.map((each, idx) => (
+          <TweetCard key={idx} tweetDb={each} />
+        ))}
       </Box>
     </Flex>
   )

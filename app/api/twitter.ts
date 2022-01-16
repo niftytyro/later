@@ -1,16 +1,6 @@
 import { twitter__tweet_endpoint, twitter__user_endpoint } from "app/constatnts"
+import { tweetIdParser } from "app/utils/twitter"
 import { BlitzApiRequest, BlitzApiResponse } from "blitz"
-
-const tweetIdParser = (url: string) => {
-  url = url.slice(url.indexOf("status/") + 7)
-  if (url.indexOf("/") > -1) {
-    url = url.slice(url.indexOf("/"))
-  }
-  if (url.indexOf("?") > -1) {
-    url = url.slice(0, url.indexOf("?"))
-  }
-  return url
-}
 
 const handler = async (req: BlitzApiRequest, res: BlitzApiResponse) => {
   const id = tweetIdParser(
@@ -48,6 +38,7 @@ const handler = async (req: BlitzApiRequest, res: BlitzApiResponse) => {
 
   res.end(
     JSON.stringify({
+      id: id,
       user: user,
       text: tweet.text,
       created_at: tweet.created_at,

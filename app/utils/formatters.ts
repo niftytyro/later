@@ -15,7 +15,7 @@ const monthNames = [
   "December",
 ]
 
-export const getTweetDate = (date: Dayjs) => {
+export const formatTweetDate = (date: Dayjs) => {
   const today = dayjs()
   const secsDiff = today.diff(date, "seconds")
   const minsDiff = today.diff(date, "minutes")

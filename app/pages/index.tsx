@@ -1,5 +1,27 @@
-import { Box, Button, Checkbox, Flex, Image, Input, Text } from "@chakra-ui/react"
+import { AddIcon } from "@chakra-ui/icons"
+import {
+  Box,
+  Button,
+  Checkbox,
+  Flex,
+  Image,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Tag,
+  TagCloseButton,
+  TagLabel,
+  Text,
+  useDisclosure,
+  Wrap,
+} from "@chakra-ui/react"
 import { Tweet } from "@prisma/client"
+import { AutoComplete } from "app/core/components/AutoComplete"
 import { useCurrentUser } from "app/core/hooks/useCurrentUser"
 import {
   ArticlesIcon,
@@ -12,11 +34,9 @@ import {
 } from "app/core/icons"
 import Layout from "app/core/layouts/Layout"
 import createTweet from "app/tweets/mutations/createTweet"
-import getTweet from "app/tweets/queries/getTweet"
-import getCurrentUser from "app/users/queries/getCurrentUser"
 import { formatTweetDate } from "app/utils/formatters"
 import { tweetIdParser } from "app/utils/twitter"
-import { BlitzPage, useMutation, useQuery, useRouter } from "blitz"
+import { BlitzPage, useMutation, useRouter } from "blitz"
 import dayjs, { Dayjs } from "dayjs"
 import { Suspense, useCallback, useEffect, useState } from "react"
 
@@ -35,6 +55,11 @@ interface TweetHome {
     reply_count: number
     retweet_count: number
   }
+}
+
+interface NewTweetModalProps {
+  isOpen: boolean
+  onClose: () => void
 }
 
 interface PublicMetricsItemProps {
@@ -155,17 +180,83 @@ const TweetCard: React.FC<{ tweetDb: Tweet }> = ({ tweetDb }) => {
   )
 }
 
+const NewTweetModal: React.FC<NewTweetModalProps> = ({ isOpen, onClose }) => {
+  const [tweetUrl, setTweetUrl] = useState("")
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+  const [options, setOptions] = useState([
+    "Python",
+    "Marketing",
+    "Business",
+    "Flutter",
+    "SEO",
+    "Podcast",
+  ])
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Add Tweet</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Input
+            value={tweetUrl}
+            placeholder="https://twitter.com/hey_yogini/status/1482423775283286016?s=20"
+            onChange={(event) => {
+              setTweetUrl(event.target.value)
+            }}
+          />
+          <Wrap mt="16">
+            {selectedOptions.map((each, idx) => (
+              <Tag key={idx}>
+                <TagLabel>{each}</TagLabel>
+                <TagCloseButton
+                  onClick={() => {
+                    setSelectedOptions(selectedOptions.filter((_, index) => idx !== index))
+                    // TODO remove from options if its not used anywhere else
+                  }}
+                />
+              </Tag>
+            ))}
+          </Wrap>
+          <AutoComplete
+            options={options.filter((option) => !selectedOptions.includes(option))}
+            onSelect={(name) => {
+              if (!selectedOptions.includes(name)) {
+                setSelectedOptions([...selectedOptions, name])
+              }
+              if (!options.includes(name)) {
+                setOptions([...options, name])
+              }
+            }}
+          />
+        </ModalBody>
+
+        <ModalFooter>
+          <Button variant="ghost" onClick={onClose} mr={4}>
+            Cancel
+          </Button>
+          <Button colorScheme="blue" mr={3} onClick={onClose}>
+            Add
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
+
 const Home: BlitzPage = () => {
   const [twitterChecked, setTwitterChecked] = useState(true)
   const [articlesChecked, setArticlesChecked] = useState(true)
   const [youtubeChecked, setYoutubeChecked] = useState(true)
-  const [tweetUrl, setTweetUrl] = useState("")
+  const [searchUrl, setSearchUrl] = useState("")
   const [tweets, setTweets] = useState<Tweet[]>([])
 
   const user = useCurrentUser()
   const router = useRouter()
-
   const [createTweetMutation] = useMutation(createTweet)
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
     if (user === null) {
@@ -176,10 +267,10 @@ const Home: BlitzPage = () => {
 
   const addTweet = useCallback(async () => {
     if (!!user) {
-      const tweet = await createTweetMutation({ user: user, tweetId: tweetIdParser(tweetUrl) })
+      const tweet = await createTweetMutation({ user: user, tweetId: tweetIdParser(searchUrl) })
       setTweets([...tweets, tweet])
     }
-  }, [createTweetMutation, tweetUrl, tweets, user])
+  }, [createTweetMutation, searchUrl, tweets, user])
 
   return (
     <Flex bg={"gray.800"} w="100vw" h="100vh" py="8" px="16">
@@ -218,14 +309,17 @@ const Home: BlitzPage = () => {
       <Box maxWidth={"80%"} flex={4}>
         <Flex height={"max-content"} flexDirection={"column"} alignItems={"flex-end"}>
           <Input
-            value={tweetUrl}
+            value={searchUrl}
             placeholder="https://twitter.com/hey_yogini/status/1482423775283286016?s=20"
             onChange={(event) => {
-              setTweetUrl(event.target.value)
+              setSearchUrl(event.target.value)
             }}
           />
-          <Button onClick={addTweet} mt="4" size={"lg"}>
-            Add
+          <Button onClick={onOpen} mt="4" size={"lg"}>
+            <Flex alignItems={"center"}>
+              <AddIcon mr={4} boxSize={4} />
+              <Text>New Tweet</Text>
+            </Flex>
           </Button>
         </Flex>
         <Box width={"100%"} sx={{ columnCount: [1, 2], columnGap: "8px" }}>
@@ -234,6 +328,7 @@ const Home: BlitzPage = () => {
           ))}
         </Box>
       </Box>
+      <NewTweetModal isOpen={isOpen} onClose={onClose} />
     </Flex>
   )
 }

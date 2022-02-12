@@ -1,8 +1,9 @@
+from sqlalchemy.engine.row import Row
 from dotenv import load_dotenv
-from typing import Generator
+from typing import Generator, Optional
 from fastapi import Cookie, Depends, FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel, Session
+from sqlmodel import SQLModel, Session, select
 import jwt
 import bcrypt
 import os
@@ -57,19 +58,18 @@ def login(
     if not validate_email(user.email):
         response.status_code = status.HTTP_400_BAD_REQUEST
         return models.ResponseModel(
-            key="Invalid Email", message="Please enter a valid email address."
+            key="email", message="Please enter a valid email address."
         )
-    if not validate_password(user.password):
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return models.ResponseModel(
-            key="Invalid Password",
-            message="A password must be of length greater than 8 and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.",
-        )
-    db_user = db.get(models.Users, user.email)
-    if db_user is not None:
+    try:
+        statement = select(models.Users).where(models.Users.email == user.email)
+        db_user = db.exec(statement).first()
+
+        if db_user is None:
+            raise
+
         if bcrypt.checkpw(
-            bytes(db_user.password, encoding="utf-8"),
-            bytes(user.password, encoding="utf-8"),
+            user.password.encode("utf-8"),
+            db_user.password.encode("utf-8"),
         ):
             jwt_secret = os.environ.get("JWT_SECRET")
             if jwt_secret is not None:
@@ -78,20 +78,22 @@ def login(
                     constants.JWT_COOKIE_KEY,
                     token,
                 )
-                return models.ResponseModel(key="Success")
+                return models.ResponseModel(key="success")
             else:
                 response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-                return models.ResponseModel(key="Oops! Something went wrong.")
+                return models.ResponseModel(
+                    key="internal_error", message="Oops! Something went wrong."
+                )
         else:
             response.status_code = status.HTTP_401_UNAUTHORIZED
             return models.ResponseModel(
-                key="Invalid Credentials.",
+                key="credentials.",
                 message="You entered a wrong email/password.",
             )
-    else:
+    except Exception as e:
         response.status_code = status.HTTP_404_NOT_FOUND
         return models.ResponseModel(
-            key="User Not Found",
+            key="user_not_found",
             message="The user does not exist. Sign up instead.",
         )
 
@@ -104,23 +106,23 @@ def signup(
         if not validate_email(user.email):
             response.status_code = status.HTTP_400_BAD_REQUEST
             return models.ResponseModel(
-                key="Invalid Email", message="Please enter a valid email address."
+                key="email", message="Please enter a valid email address."
             )
-        if not validate_password(user.password) or not validate_name(user.name):
+        if not validate_password(user.password):
             response.status_code = status.HTTP_400_BAD_REQUEST
             return models.ResponseModel(
-                key="Invalid Password",
+                key="password",
                 message="A password must be of length greater than 8 and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.",
             )
         if not validate_name(user.name):
             response.status_code = status.HTTP_400_BAD_REQUEST
             return models.ResponseModel(
-                key="Invalid Email", message="Please enter your real name."
+                key="name", message="Please enter your real name."
             )
-        password = bcrypt.hashpw(
-            bytes(user.password, encoding="utf-8"), bcrypt.gensalt()
+        password = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt())
+        db_user = models.Users(
+            email=user.email, name=user.name, password=password.decode("utf-8")
         )
-        db_user = models.Users(email=user.email, name=user.name, password=password)
         db.add(db_user)
         db.commit()
         jwt_secret = os.environ.get("JWT_SECRET")
@@ -130,17 +132,22 @@ def signup(
                 constants.JWT_COOKIE_KEY,
                 token,
             )
-            return models.ResponseModel(key="Success")
+            return models.ResponseModel(key="success")
         else:
             response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-            return models.ResponseModel(key="Oops! Something went wrong.")
+            return models.ResponseModel(
+                key="internal_error", message="Oops! Something went wrong."
+            )
     except Exception:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return models.ResponseModel(
-            key="User Already Exists",
+            key="user_already_exists",
             message="Looks like the user already exists. Login instead.",
         )
 
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+b"$2b$12$285IWlhJrRisUpAjJamNluBBNuwleb5gjJBqjpIjkmvQR5qYDjn8C"
+b"$2b$12$285IWlhJrRisUpAjJamNluBBNuwleb5gjJBqjpIjkmvQR5qYDjn8C"

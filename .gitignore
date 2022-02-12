@@ -1,3 +1,5 @@
+.vscode
+
 # python files
 */venv
 */__pycache__

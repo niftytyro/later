@@ -357,7 +357,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     fetch("http://localhost:8000/", {
       credentials: "include",
-    }).then((response) => {
+    }).then(async (response) => {
       if (response.status === 401) {
         navigate("/auth", { replace: true });
       }

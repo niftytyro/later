@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Tweet" ALTER COLUMN "tweetId" SET DATA TYPE TEXT;

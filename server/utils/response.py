@@ -1,5 +1,5 @@
 import enum
-from .models import ResponseModel
+from ..models import ResponseModel
 
 
 class Response_Key(enum.Enum):

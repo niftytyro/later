@@ -2,8 +2,9 @@
 
 # python files
 */venv
-*/__pycache__
+*/**/__pycache__
 */.mypy_cache
+*.pyc
 .env
 mypy.ini
 .pylintrc

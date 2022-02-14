@@ -1,22 +1,22 @@
-from sqlalchemy.engine.row import Row
-from dotenv import load_dotenv
-from typing import Generator, Optional
-from fastapi import Cookie, Depends, FastAPI, Request, Response, status
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel, Session, select
 from datetime import datetime, timedelta, timezone
-import jwt
+from typing import Generator, List
+
 import bcrypt
-import os
+import jwt
 import uvicorn
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, SQLModel, select
 
 # load env variables
 load_dotenv()
 
-from . import models, constants
+from . import constants, models
 from .database import engine
-from .validations import validate_email, validate_password, validate_name
-from .utils import Response_Key, generate_response
+from .utils.response import Response_Key, generate_response
+from .utils.twitter import parse_tweet_id
+from .validations import validate_email, validate_name, validate_password
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -64,16 +64,44 @@ def on_startup() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-@app.get("/", response_model=models.ResponseModel)
+@app.get("/", response_model=models.ResponseModel, status_code=200)
 def index(
-    response: Response,
     user: models.Users | models.ResponseModel = Depends(get_user),
+) -> models.ResponseModel:
+
+    if isinstance(user, models.ResponseModel):
+        return user
+
+    return generate_response(Response_Key.SUCCESS)
+
+
+@app.get("/posts", response_model=List[models.Posts])
+def get_posts(
+    user: models.Users | models.ResponseModel,
+) -> models.ResponseModel | List[models.Posts]:
+    if isinstance(user, models.ResponseModel):
+        return user
+
+    return user.posts
+
+
+@app.post("/posts/create", response_model=models.ResponseModel)
+def create_post(
+    post_data: models.PostCreate,
+    user: models.Users | models.ResponseModel = Depends(get_user),
+    db: Session = Depends(get_db),
 ) -> models.ResponseModel:
     if isinstance(user, models.ResponseModel):
         return user
 
-    response.status_code = status.HTTP_401_UNAUTHORIZED
-    return generate_response(Response_Key.UNATUHENTICATED)
+    post = models.Posts(post_id=parse_tweet_id(post_data.url), type="twitter")
+    user.posts.append(post)
+    db.add(user)
+    db.commit()
+
+    print(user.name, user.posts)
+
+    return generate_response(Response_Key.SUCCESS)
 
 
 @app.post("/auth/login", response_model=models.ResponseModel)

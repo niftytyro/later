@@ -1,7 +1,7 @@
 import { Box, Button } from "@chakra-ui/react";
 import React, { useCallback } from "react";
 import Input from "src/components/Input";
-import { getRequestHeaders } from "src/utils/api";
+import { fetchApi } from "src/utils/api";
 
 export interface LoginFormProps {
   email: string;
@@ -29,23 +29,17 @@ const Login: React.FC<LoginFormProps> = ({
   const login = useCallback(async () => {
     setEmailError("");
     setPasswordError("");
-    const response = await fetch("http://localhost:8000/auth/login", {
+    const response = await fetchApi("/auth/login", {
       method: "POST",
-      headers: getRequestHeaders(),
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      body: { email, password },
     });
 
-    const error = await response.json();
-    switch (error.key) {
+    switch (response.key) {
       case "email":
-        setEmailError(error.message);
+        setEmailError(response.message);
         break;
       case "password":
-        setPasswordError(error.message);
+        setPasswordError(response.message);
         break;
       case "success":
         onLogin();
@@ -53,7 +47,7 @@ const Login: React.FC<LoginFormProps> = ({
       default:
         break;
     }
-  }, [email, password, setEmailError, setPasswordError]);
+  }, [email, onLogin, password, setEmailError, setPasswordError]);
 
   return (
     <>

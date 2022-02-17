@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from sqlmodel import Relationship, SQLModel, Field, UniqueConstraint
 
 
@@ -30,9 +30,11 @@ class UserLogin(SQLModel):
 class ResponseModel(SQLModel):
     key: str
     message: Optional[str]
+    data: Optional[Dict[str, Any]]
 
 
 class Posts(SQLModel, table=True):
+    __table_args__ = (UniqueConstraint("type", "post_id"),)
     id: Optional[int] = Field(default=None, primary_key=True)
     type: str
     post_id: str

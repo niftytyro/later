@@ -1,13 +1,17 @@
 import enum
+from typing import Any, Dict, Optional
 from ..models import ResponseModel
 
 
-class Response_Key(enum.Enum):
+class ResponseKey(enum.Enum):
     CREDENTIALS = "credentials"
+    DUPLICATE_POST = "duplicate_post"
     EMAIL = "email"
+    INTERNAL_SERVER_ERROR = "internal_server_error"
+    INVALID_POST = "invalid_post"
+    INVALID_URL = "invalid_url"
     NAME = "name"
     PASSWORD = "password"
-    INTERNAL_SERVER_ERROR = "internal_server_error"
     SUCCESS = "success"
     UNATUHENTICATED = "unauthenticated"
     USER_ALREADY_EXISTS = "user_already_exists"
@@ -15,17 +19,22 @@ class Response_Key(enum.Enum):
 
 
 response_messages = {
-    Response_Key.CREDENTIALS: "You entered a wrong email/password.",
-    Response_Key.EMAIL: "Please enter a valid email address.",
-    Response_Key.INTERNAL_SERVER_ERROR: "Oops! Something went wrong.",
-    Response_Key.NAME: "Please enter your real name.",
-    Response_Key.PASSWORD: "A password must be of length greater than 8 and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.",
-    Response_Key.SUCCESS: "Let's gooo!",
-    Response_Key.UNATUHENTICATED: "You are not authenticated.",
-    Response_Key.USER_ALREADY_EXISTS: "Looks like the user already exists. Login instead.",
-    Response_Key.USER_NOT_FOUND: "Such a user does not exist. Signup instead.",
+    ResponseKey.CREDENTIALS: "You entered a wrong email/password.",
+    ResponseKey.DUPLICATE_POST: "You have already latered this post.",
+    ResponseKey.EMAIL: "Please enter a valid email address.",
+    ResponseKey.INTERNAL_SERVER_ERROR: "Oops! Something went wrong.",
+    ResponseKey.INVALID_POST: "This post doesn't exist.",
+    ResponseKey.INVALID_URL: "Invalid url. Please provide a valid url.",
+    ResponseKey.NAME: "Please enter your real name.",
+    ResponseKey.PASSWORD: "A password must be of length greater than 8 and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.",
+    ResponseKey.SUCCESS: "Let's gooo!",
+    ResponseKey.UNATUHENTICATED: "You are not authenticated.",
+    ResponseKey.USER_ALREADY_EXISTS: "Looks like the user already exists. Login instead.",
+    ResponseKey.USER_NOT_FOUND: "Such a user does not exist. Signup instead.",
 }
 
 
-def generate_response(key: Response_Key) -> ResponseModel:
-    return ResponseModel(key=key.value, message=response_messages[key])
+def generate_response(
+    key: ResponseKey, data: Optional[Dict[str, Any]] = {}
+) -> ResponseModel:
+    return ResponseModel(key=key.value, message=response_messages[key], data=data)

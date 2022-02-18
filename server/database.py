@@ -12,4 +12,4 @@ def get_url() -> str:
 
 DATABSE_URL = get_url()
 
-engine = create_engine(DATABSE_URL, echo=True)
+engine = create_engine(DATABSE_URL)

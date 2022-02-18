@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Generator, List
-from urllib import response
+from typing import Any, Dict, Generator, List
 import httpx
 
 import bcrypt
@@ -11,6 +10,8 @@ from fastapi import Depends, FastAPI, Request, Response, status
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, SQLModel, select
+
+from server.utils.tags import map_tags
 
 # load env variables
 load_dotenv()
@@ -90,7 +91,6 @@ def get_post(
         return user
 
     post = db.get(models.Posts, id)
-    print(post)
     if post is not None:
         # if type=="twitter":
         ids = f"ids={post.post_id}"
@@ -113,10 +113,12 @@ def get_post(
             ResponseKey.SUCCESS,
             data={
                 "id": id,
+                "post_id": post.post_id,
                 "author": author,
                 "text": tweet["text"],
                 "created_at": tweet["created_at"],
                 "public_metrics": tweet["public_metrics"],
+                "tags": post.tags,
             },
         )
 
@@ -124,14 +126,35 @@ def get_post(
     return generate_response(ResponseKey.INVALID_POST)
 
 
-@app.get("/posts", response_model=List[models.Posts])
-def get_posts(
+@app.get("/tags", response_model=models.ResponseModel)
+def get_tags(
     user: models.Users | models.ResponseModel = Depends(get_user),
-) -> models.ResponseModel | List[models.Posts]:
+) -> models.ResponseModel:
     if isinstance(user, models.ResponseModel):
         return user
 
-    return user.posts
+    try:
+        all_tags: List[models.Tags] = []
+        for post in user.posts:
+            for tag in post.tags:
+                all_tags.append(tag)
+
+        all_tags = list({tag.id: tag for tag in all_tags}.values())
+
+        return generate_response(key=ResponseKey.SUCCESS, data={"tags": all_tags})
+    except Exception as e:
+        print(e)
+        return generate_response(key=ResponseKey.DUPLICATE_POST)
+
+
+@app.get("/posts", response_model=models.ResponseModel)
+def get_posts(
+    user: models.Users | models.ResponseModel = Depends(get_user),
+) -> models.ResponseModel:
+    if isinstance(user, models.ResponseModel):
+        return user
+
+    return generate_response(ResponseKey.SUCCESS, data={"posts": user.posts})
 
 
 @app.post("/posts/create", response_model=models.ResponseModel)
@@ -156,20 +179,14 @@ def create_post(
         )
         post = db.exec(statement).first()
 
-        if post is None:
-            post = models.Posts(post_id=post_id, type="twitter")
-            user.posts.append(post)
-            db.add(user)
-            db.commit()
-            return generate_response(
-                ResponseKey.SUCCESS,
-                data={"id": post.id, "post_id": post.post_id, "type": "twitter"},
-            )
-
-        if user in post.users:
+        if post in user.posts:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return generate_response(ResponseKey.DUPLICATE_POST)
 
+        post = models.Posts(post_id=post_id, type="twitter")
+        tags = map_tags(db, post_data.tags or [])
+
+        post.tags = tags
         user.posts.append(post)
         db.add(user)
         db.commit()
@@ -181,6 +198,28 @@ def create_post(
     except Exception as e:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return generate_response(ResponseKey.INTERNAL_SERVER_ERROR)
+
+
+@app.post("posts/update", response_model=models.ResponseModel)
+def update_post(
+    post_data: models.PostUpdate,
+    response: Response,
+    user: models.ResponseModel | models.Users = Depends(get_user),
+    db: Session = Depends(get_db),
+) -> models.ResponseModel:
+    if isinstance(user, models.ResponseModel):
+        return user
+
+    post = db.get(models.Posts, post_data.id)
+    if post is None:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return generate_response(ResponseKey.POST_NOT_FOUND)
+
+    post.tags = map_tags(db, post_data.tags)
+    db.add(post.tags)
+    db.commit()
+
+    return generate_response(ResponseKey.SUCCESS)
 
 
 @app.post("/auth/login", response_model=models.ResponseModel)

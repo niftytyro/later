@@ -14,7 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
-  Tag,
+  Tag as TagContainer,
   TagCloseButton,
   TagLabel,
   Text,
@@ -35,7 +35,12 @@ import {
   TwitterIcon,
   YoutubeIcon,
 } from "../../icons";
-// import { AutoComplete } from "./AutoComplete";
+import { AutoComplete } from "./AutoComplete";
+
+export interface Tag {
+  id: number;
+  name: string;
+}
 
 interface SavedPost {
   id: number;
@@ -45,6 +50,7 @@ interface SavedPost {
 
 interface TweetHome {
   id: number;
+  post_id: string;
   text: string;
   created_at: Dayjs;
   author: {
@@ -58,12 +64,14 @@ interface TweetHome {
     reply_count: number;
     retweet_count: number;
   };
+  tags: Tag[];
 }
 
 interface NewTweetModalProps {
   isOpen: boolean;
-  addTweet: (text: string) => Promise<void>;
+  addTweet: (text: string, tags: string[]) => Promise<void>;
   onClose: () => void;
+  tags: Tag[];
 }
 
 interface PublicMetricsItemProps {
@@ -222,18 +230,18 @@ const NewTweetModal: React.FC<NewTweetModalProps> = ({
   isOpen,
   addTweet,
   onClose,
+  tags,
 }) => {
   const [tweetUrl, setTweetUrl] = useState("");
 
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  // const [newOptions, setNewOptions] = useState<string[]>([]);
+  const [options, setOptions] = useState<string[]>([]);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={() => {
         onClose();
-        setSelectedOptions([]);
+        setOptions([]);
       }}
     >
       <ModalOverlay />
@@ -249,32 +257,26 @@ const NewTweetModal: React.FC<NewTweetModalProps> = ({
             }}
           />
           <Wrap mt="16">
-            {selectedOptions.map((each, idx) => (
-              <Tag key={idx}>
-                <TagLabel>{each}</TagLabel>
+            {options.map((option, idx) => (
+              <TagContainer key={idx}>
+                <TagLabel>{option}</TagLabel>
                 <TagCloseButton
                   onClick={() => {
-                    setSelectedOptions(
-                      selectedOptions.filter((_, index) => idx !== index)
-                    );
+                    setOptions(options.filter((_, index) => idx !== index));
                     // TODO remove from options if its not used anywhere else
                   }}
                 />
-              </Tag>
+              </TagContainer>
             ))}
           </Wrap>
-          {/* <AutoComplete
-            options={tags[0]}
+          <AutoComplete
+            tags={tags}
             onSelect={(name) => {
-              if (!selectedOptions.includes(name)) {
-                setSelectedOptions([...selectedOptions, name]);
-              }
-              if (!tags[0].tags.find((tag) => tag.name === name)) {
-                // createTagMutation({ name })
-                setNewOptions([...newOptions, name]);
+              if (!options.includes(name) && name.trim().length) {
+                setOptions([...options, name]);
               }
             }}
-          /> */}
+          />
         </ModalBody>
 
         <ModalFooter>
@@ -282,7 +284,7 @@ const NewTweetModal: React.FC<NewTweetModalProps> = ({
             variant="ghost"
             onClick={() => {
               onClose();
-              setSelectedOptions([]);
+              setOptions([]);
             }}
             mr={4}
           >
@@ -292,9 +294,9 @@ const NewTweetModal: React.FC<NewTweetModalProps> = ({
             colorScheme="blue"
             mr={3}
             onClick={async () => {
-              await addTweet(tweetUrl);
+              await addTweet(tweetUrl, options);
               onClose();
-              setSelectedOptions([]);
+              setOptions([]);
             }}
           >
             Add
@@ -312,14 +314,15 @@ const Home: React.FC = () => {
 
   const [search, setSearch] = useState("");
   const [posts, setPosts] = useState<SavedPost[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const addTweet = useCallback(
-    async (url: string) => {
+    async (url: string, tags: string[]) => {
       const post = await fetchApi("/posts/create", {
         method: "POST",
-        body: { url },
+        body: { url, tags },
       });
       if (post.key === "success") {
         setPosts([...posts, post.data]);
@@ -333,15 +336,20 @@ const Home: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetchApi("/posts");
-        if (response.key === "unauthenticated") {
+        const postResponse = await fetchApi("/posts");
+        if (postResponse.key === "unauthenticated") {
           navigate("/auth", { replace: true });
         }
-        setPosts(response);
+        setPosts(postResponse.data.posts);
+        const tagsResponse = await fetchApi("/tags");
+        if (tagsResponse.key === "success") {
+          setTags(tagsResponse.data.tags);
+        }
       } catch (e) {
         console.log(e);
       }
     })();
+    return () => setPosts([]);
   }, [navigate]);
 
   return (
@@ -427,6 +435,7 @@ const Home: React.FC = () => {
           onClose();
         }}
         addTweet={addTweet}
+        tags={tags}
       />
     </Flex>
   );

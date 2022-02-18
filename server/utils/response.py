@@ -12,6 +12,7 @@ class ResponseKey(enum.Enum):
     INVALID_URL = "invalid_url"
     NAME = "name"
     PASSWORD = "password"
+    POST_NOT_FOUND = "post_not_found"
     SUCCESS = "success"
     UNATUHENTICATED = "unauthenticated"
     USER_ALREADY_EXISTS = "user_already_exists"
@@ -27,6 +28,7 @@ response_messages = {
     ResponseKey.INVALID_URL: "Invalid url. Please provide a valid url.",
     ResponseKey.NAME: "Please enter your real name.",
     ResponseKey.PASSWORD: "A password must be of length greater than 8 and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.",
+    ResponseKey.POST_NOT_FOUND: "This post does not exist.",
     ResponseKey.SUCCESS: "Let's gooo!",
     ResponseKey.UNATUHENTICATED: "You are not authenticated.",
     ResponseKey.USER_ALREADY_EXISTS: "Looks like the user already exists. Login instead.",

@@ -19,7 +19,7 @@ load_dotenv()
 from . import constants, models
 from .database import engine
 from .utils.response import ResponseKey, generate_response
-from .utils.twitter import parse_tweet_id
+from .utils.twitter import fetch_tweet, parse_tweet_id
 from .validations import validate_email, validate_name, validate_password
 
 
@@ -93,22 +93,7 @@ def get_post(
     post = db.get(models.Posts, id)
     if post is not None:
         # if type=="twitter":
-        ids = f"ids={post.post_id}"
-        tweet_fields = "tweet.fields=author_id,public_metrics,created_at"
-        user_fields = "user.fields=profile_image_url"
-
-        tweet_response = httpx.get(
-            f"{constants.TWITTER_TWEET_ENDPOINT}?{ids}&{tweet_fields}",
-            headers={"authorization": f"Bearer {constants.TWITTER_AUTH_TOKEN}"},
-        )
-        tweet = tweet_response.json()["data"][0]
-
-        author_response = httpx.get(
-            f"{constants.TWITTER_USERS_ENDPOINT}/{tweet['author_id']}?{user_fields}",
-            headers={"authorization": f"Bearer {constants.TWITTER_AUTH_TOKEN}"},
-        )
-        author = author_response.json()["data"]
-
+        author, tweet = fetch_tweet(post.post_id)
         return generate_response(
             ResponseKey.SUCCESS,
             data={
@@ -190,9 +175,18 @@ def create_post(
         user.posts.append(post)
         db.add(user)
         db.commit()
+        author, tweet = fetch_tweet(post.post_id)
         return generate_response(
             ResponseKey.SUCCESS,
-            data={"id": post.id, "post_id": post.post_id, "type": "twitter"},
+            data={
+                "id": id,
+                "post_id": post.post_id,
+                "author": author,
+                "text": tweet["text"],
+                "created_at": tweet["created_at"],
+                "public_metrics": tweet["public_metrics"],
+                "tags": post.tags,
+            },
         )
 
     except Exception as e:
@@ -200,7 +194,7 @@ def create_post(
         return generate_response(ResponseKey.INTERNAL_SERVER_ERROR)
 
 
-@app.post("posts/update", response_model=models.ResponseModel)
+@app.post("/posts/update", response_model=models.ResponseModel)
 def update_post(
     post_data: models.PostUpdate,
     response: Response,
@@ -216,10 +210,13 @@ def update_post(
         return generate_response(ResponseKey.POST_NOT_FOUND)
 
     post.tags = map_tags(db, post_data.tags)
-    db.add(post.tags)
+    db.add(post)
     db.commit()
 
-    return generate_response(ResponseKey.SUCCESS)
+    return generate_response(
+        ResponseKey.SUCCESS,
+        data={"post": {"id": post.id, "post_id": post.post_id, "type": post.type}},
+    )
 
 
 @app.post("/auth/login", response_model=models.ResponseModel)

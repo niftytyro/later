@@ -1,23 +1,33 @@
-import { Icon } from "@chakra-ui/react"
-import React from "react"
+import { Icon } from "@chakra-ui/react";
+import React from "react";
 
 interface TileIconProps {
-  active: boolean
-  size?: number
+  active: boolean;
+  size?: number;
 }
 
 export const TwitterIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
   return (
     <Icon boxSize={size}>
       {active ? (
-        <svg width="24" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="24"
+          height="20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             d="M24 2.366a9.641 9.641 0 0 1-2.828.795A5.043 5.043 0 0 0 23.337.37a9.69 9.69 0 0 1-3.127 1.225A4.86 4.86 0 0 0 16.616 0c-2.718 0-4.923 2.26-4.923 5.048 0 .396.044.781.127 1.151C7.728 5.99 4.1 3.98 1.672.925a5.122 5.122 0 0 0-.666 2.538 5.08 5.08 0 0 0 2.19 4.201 4.809 4.809 0 0 1-2.23-.63v.063c0 2.446 1.696 4.486 3.949 4.95a4.874 4.874 0 0 1-2.224.088c.626 2.005 2.445 3.465 4.598 3.506A9.723 9.723 0 0 1 0 17.73 13.683 13.683 0 0 0 7.547 20c9.056 0 14.008-7.693 14.008-14.364 0-.219-.005-.436-.015-.653A10.178 10.178 0 0 0 24 2.366Z"
             fill="#4BC8FF"
           />
         </svg>
       ) : (
-        <svg width="24" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="24"
+          height="20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             d="M24 2.366a9.641 9.641 0 0 1-2.828.795A5.043 5.043 0 0 0 23.337.37a9.69 9.69 0 0 1-3.127 1.225A4.86 4.86 0 0 0 16.616 0c-2.718 0-4.923 2.26-4.923 5.048 0 .396.044.781.127 1.151C7.728 5.99 4.1 3.98 1.672.925a5.122 5.122 0 0 0-.666 2.538 5.08 5.08 0 0 0 2.19 4.201 4.809 4.809 0 0 1-2.23-.63v.063c0 2.446 1.696 4.486 3.949 4.95a4.874 4.874 0 0 1-2.224.088c.626 2.005 2.445 3.465 4.598 3.506A9.723 9.723 0 0 1 0 17.73 13.683 13.683 0 0 0 7.547 20c9.056 0 14.008-7.693 14.008-14.364 0-.219-.005-.436-.015-.653A10.178 10.178 0 0 0 24 2.366Z"
             fill="#999"
@@ -25,14 +35,19 @@ export const TwitterIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
         </svg>
       )}
     </Icon>
-  )
-}
+  );
+};
 
 export const ArticlesIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
   return (
     <Icon boxSize={size}>
       {active ? (
-        <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="24"
+          height="24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <g clipPath="url(#a)">
             <path
               d="M3 3v20.25a.75.75 0 0 0 1.11.659L12 19.604l7.89 4.305A.75.75 0 0 0 21 23.25V3a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3Z"
@@ -46,7 +61,12 @@ export const ArticlesIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
           </defs>
         </svg>
       ) : (
-        <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="24"
+          height="24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <g clipPath="url(#a)">
             <path
               d="M3 3v20.25a.75.75 0 0 0 1.11.659L12 19.604l7.89 4.305A.75.75 0 0 0 21 23.25V3a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3Z"
@@ -61,14 +81,19 @@ export const ArticlesIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
         </svg>
       )}
     </Icon>
-  )
-}
+  );
+};
 
 export const YoutubeIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
   return (
     <Icon boxSize={size}>
       {active ? (
-        <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="24"
+          height="24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             d="M23.476 6.662a3.039 3.039 0 0 0-2.125-2.148C19.486 4 11.985 4 11.985 4s-7.502.016-9.366.53A3.039 3.039 0 0 0 .493 6.677C0 8.56 0 12.5 0 12.5s0 3.939.508 5.838a3.039 3.039 0 0 0 2.126 2.148C4.498 21 12 21 12 21s7.502 0 9.366-.514a3.039 3.039 0 0 0 2.126-2.148C24 16.454 24 12.5 24 12.5s-.015-3.939-.524-5.838Z"
             fill="red"
@@ -76,7 +101,12 @@ export const YoutubeIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
           <path d="M15.82 12.645 9.597 9v7.29l6.223-3.645Z" fill="#fff" />
         </svg>
       ) : (
-        <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="24"
+          height="24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             d="M23.476 6.662a3.039 3.039 0 0 0-2.125-2.148C19.486 4 11.985 4 11.985 4s-7.502.016-9.366.53A3.039 3.039 0 0 0 .493 6.677C0 8.56 0 12.5 0 12.5s0 3.939.508 5.838a3.039 3.039 0 0 0 2.126 2.148C4.498 21 12 21 12 21s7.502 0 9.366-.514a3.039 3.039 0 0 0 2.126-2.148C24 16.454 24 12.5 24 12.5s-.015-3.939-.524-5.838Z"
             fill="#999"
@@ -85,8 +115,8 @@ export const YoutubeIcon: React.FC<TileIconProps> = ({ active, size = 6 }) => {
         </svg>
       )}
     </Icon>
-  )
-}
+  );
+};
 
 export const ReplyIcon: React.FC = () => {
   return (
@@ -101,8 +131,8 @@ export const ReplyIcon: React.FC = () => {
         </g>
       </svg>
     </Icon>
-  )
-}
+  );
+};
 
 export const RetweetIcon: React.FC = () => {
   return (
@@ -117,8 +147,8 @@ export const RetweetIcon: React.FC = () => {
         </g>
       </svg>
     </Icon>
-  )
-}
+  );
+};
 
 export const LikeIcon: React.FC = () => {
   return (
@@ -133,8 +163,8 @@ export const LikeIcon: React.FC = () => {
         </g>
       </svg>
     </Icon>
-  )
-}
+  );
+};
 
 export const ShareIcon: React.FC = () => {
   return (
@@ -150,5 +180,24 @@ export const ShareIcon: React.FC = () => {
         </g>
       </svg>
     </Icon>
-  )
-}
+  );
+};
+
+export const EditIcon: React.FC = () => {
+  return (
+    <Icon boxSize={4} fill={"gray.500"}>
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M27.314 4.68703C27.6854 5.05846 27.9801 5.49943 28.1811 5.98475C28.3822 6.47006 28.4856 6.99022 28.4856 7.51553C28.4856 8.04083 28.3822 8.56099 28.1811 9.04631C27.9801 9.53162 27.6854 9.97259 27.314 10.344L12.54 25.117C11.8992 25.7578 11.0962 26.2124 10.217 26.432L5.63499 27.578C5.46741 27.62 5.29181 27.6178 5.12531 27.5718C4.95881 27.5257 4.80708 27.4373 4.68492 27.3151C4.56276 27.1929 4.47433 27.0412 4.42825 26.8747C4.38218 26.7082 4.38002 26.5326 4.42199 26.365L5.56799 21.783C5.78771 20.9038 6.24224 20.1009 6.88299 19.46L21.657 4.68703C22.0284 4.31557 22.4694 4.02091 22.9547 3.81988C23.44 3.61885 23.9602 3.51538 24.4855 3.51538C25.0108 3.51538 25.531 3.61885 26.0163 3.81988C26.5016 4.02091 26.9426 4.31557 27.314 4.68703V4.68703ZM20.243 8.93003L8.29799 20.874C7.91351 21.2586 7.64079 21.7404 7.50899 22.268L6.76799 25.233L9.73299 24.492C10.2607 24.3599 10.7425 24.0868 11.127 23.702L23.07 11.759L20.243 8.93003ZM23.07 6.10003L21.656 7.51503L24.484 10.343L25.9 8.93003C26.2753 8.55475 26.4861 8.04575 26.4861 7.51503C26.4861 6.9843 26.2753 6.47531 25.9 6.10003C25.5247 5.72475 25.0157 5.51391 24.485 5.51391C23.9543 5.51391 23.4453 5.72475 23.07 6.10003V6.10003Z"
+          fill="#90cdf4"
+        />
+      </svg>
+    </Icon>
+  );
+};

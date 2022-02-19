@@ -4,78 +4,21 @@ import {
   Button,
   Checkbox,
   Flex,
-  Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spinner,
-  Tag as TagContainer,
-  TagCloseButton,
-  TagLabel,
   Text,
   useDisclosure,
-  Wrap,
 } from "@chakra-ui/react";
-import dayjs, { Dayjs } from "dayjs";
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchApi } from "src/utils/api";
-import { formatTweetDate } from "src/utils/formatters";
-import {
-  ArticlesIcon,
-  LikeIcon,
-  ReplyIcon,
-  RetweetIcon,
-  ShareIcon,
-  TwitterIcon,
-  YoutubeIcon,
-} from "../../icons";
-import { AutoComplete } from "./AutoComplete";
+import { ArticlesIcon, TwitterIcon, YoutubeIcon } from "../../icons";
+import { NewTweetModal } from "./Modal";
+import { SavedPost, TweetCard } from "./Tweet";
 
 export interface Tag {
   id: number;
   name: string;
-}
-
-interface SavedPost {
-  id: number;
-  post_id: string;
-  type: "twitter";
-}
-
-interface TweetHome {
-  id: number;
-  post_id: string;
-  text: string;
-  created_at: Dayjs;
-  author: {
-    name: string;
-    username: string;
-    profile_image_url: string;
-  };
-  public_metrics: {
-    like_count: number;
-    quote_count: number;
-    reply_count: number;
-    retweet_count: number;
-  };
-  tags: Tag[];
-}
-
-interface NewTweetModalProps {
-  isOpen: boolean;
-  addTweet: (text: string, tags: string[]) => Promise<void>;
-  onClose: () => void;
-  tags: Tag[];
-}
-
-interface PublicMetricsItemProps {
-  count: string;
 }
 
 interface FiltersListProps {
@@ -133,180 +76,6 @@ const FiltersOption: React.FC<FiltersOptionProps> = ({
   );
 };
 
-const PublicMetricsItem: React.FC<PublicMetricsItemProps> = ({
-  count,
-  children,
-}) => {
-  return (
-    <Flex flex={1} alignItems={"center"} pr="8">
-      {children}
-      {count !== "0" && (
-        <Text ml="3" color={"gray.500"} fontSize={"sm"}>
-          {count}
-        </Text>
-      )}
-    </Flex>
-  );
-};
-
-const TweetCard: React.FC<{ post: SavedPost }> = ({ post }) => {
-  const [tweet, setTweet] = useState<TweetHome>();
-
-  useEffect(() => {
-    (async () => {
-      const tweetResponse = await fetchApi("/post", {
-        queryParams: { id: post.id.toString(), type: post.type },
-      });
-
-      setTweet({
-        ...tweetResponse.data,
-        created_at: dayjs(tweetResponse?.created_at),
-      });
-    })();
-  }, [post.id, post.post_id, post.type]);
-
-  return (
-    <Box w="100%" borderRadius="xl" mb={"8"} d="inline-block">
-      {tweet && (
-        <Flex alignItems={"start"}>
-          <Image
-            src={tweet.author.profile_image_url}
-            alt="profile"
-            borderRadius={"3xl"}
-          />
-          <Box w={"100%"}>
-            <Flex alignItems={"center"} ml="3">
-              <Text fontWeight={"semibold"}>{tweet.author.name} </Text>
-              <Text
-                color={"gray.500"}
-                fontSize={"sm"}
-                fontWeight={"medium"}
-                ml="2"
-              >
-                @{tweet.author.username}
-              </Text>
-              <Text
-                mx="1"
-                color={"gray.500"}
-                fontSize={"xx-small"}
-                fontWeight={"medium"}
-              >
-                •
-              </Text>
-              <Text color={"gray.500"} fontSize={"sm"} fontWeight={"medium"}>
-                {formatTweetDate(tweet.created_at)}
-              </Text>
-            </Flex>
-            <Text ml="3" mb="4" whiteSpace={"pre-wrap"}>
-              {tweet.text}
-            </Text>
-            <Flex ml="6">
-              <PublicMetricsItem
-                count={`${
-                  tweet.public_metrics.quote_count +
-                  tweet.public_metrics.retweet_count
-                }`}
-              >
-                <RetweetIcon />
-              </PublicMetricsItem>
-              <PublicMetricsItem count={`${tweet.public_metrics.like_count}`}>
-                <LikeIcon />
-              </PublicMetricsItem>
-              <PublicMetricsItem count={`${tweet.public_metrics.reply_count}`}>
-                <ReplyIcon />
-              </PublicMetricsItem>
-              <PublicMetricsItem count="">
-                <ShareIcon />
-              </PublicMetricsItem>
-            </Flex>
-          </Box>
-        </Flex>
-      )}
-    </Box>
-  );
-};
-
-const NewTweetModal: React.FC<NewTweetModalProps> = ({
-  isOpen,
-  addTweet,
-  onClose,
-  tags,
-}) => {
-  const [tweetUrl, setTweetUrl] = useState("");
-
-  const [options, setOptions] = useState<string[]>([]);
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={() => {
-        onClose();
-        setOptions([]);
-      }}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Add Tweet</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Input
-            value={tweetUrl}
-            placeholder="https://twitter.com/hey_yogini/status/1482423775283286016?s=20"
-            onChange={(event) => {
-              setTweetUrl(event.target.value);
-            }}
-          />
-          <Wrap mt="16">
-            {options.map((option, idx) => (
-              <TagContainer key={idx}>
-                <TagLabel>{option}</TagLabel>
-                <TagCloseButton
-                  onClick={() => {
-                    setOptions(options.filter((_, index) => idx !== index));
-                    // TODO remove from options if its not used anywhere else
-                  }}
-                />
-              </TagContainer>
-            ))}
-          </Wrap>
-          <AutoComplete
-            tags={tags}
-            onSelect={(name) => {
-              if (!options.includes(name) && name.trim().length) {
-                setOptions([...options, name]);
-              }
-            }}
-          />
-        </ModalBody>
-
-        <ModalFooter>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              onClose();
-              setOptions([]);
-            }}
-            mr={4}
-          >
-            Cancel
-          </Button>
-          <Button
-            colorScheme="blue"
-            mr={3}
-            onClick={async () => {
-              await addTweet(tweetUrl, options);
-              onClose();
-              setOptions([]);
-            }}
-          >
-            Add
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  );
-};
-
 const Home: React.FC = () => {
   const [twitterChecked, setTwitterChecked] = useState(true);
   const [articlesChecked, setArticlesChecked] = useState(true);
@@ -316,7 +85,11 @@ const Home: React.FC = () => {
   const [posts, setPosts] = useState<SavedPost[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: newTweetModalIsOpen,
+    onOpen: onNewTweetModalOpen,
+    onClose: onNewTweetModalClose,
+  } = useDisclosure();
 
   const addTweet = useCallback(
     async (url: string, tags: string[]) => {
@@ -399,7 +172,7 @@ const Home: React.FC = () => {
               setSearch(event.target.value);
             }}
           />
-          <Button onClick={onOpen} mt="4" size={"lg"}>
+          <Button onClick={onNewTweetModalOpen} mt="4" size={"lg"}>
             <Flex alignItems={"center"}>
               <AddIcon mr={4} boxSize={4} />
               <Text>New Tweet</Text>
@@ -422,7 +195,11 @@ const Home: React.FC = () => {
             />
           </Box>
         ) : (
-          <Box width={"100%"} sx={{ columnCount: [1, 2], columnGap: "8px" }}>
+          <Box
+            width={"100%"}
+            mt="8"
+            sx={{ columnCount: [1, 2], columnGap: "8px" }}
+          >
             {posts.map((post, idx) => (
               <TweetCard key={idx} post={post} />
             ))}
@@ -430,9 +207,9 @@ const Home: React.FC = () => {
         )}
       </Box>
       <NewTweetModal
-        isOpen={isOpen}
+        isOpen={newTweetModalIsOpen}
         onClose={() => {
-          onClose();
+          onNewTweetModalClose();
         }}
         addTweet={addTweet}
         tags={tags}

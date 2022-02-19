@@ -26,3 +26,8 @@ html::-webkit-scrollbar {
 body::-webkit-scrollbar {
   display: none;
 }
+
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

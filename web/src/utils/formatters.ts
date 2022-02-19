@@ -47,3 +47,7 @@ export const formatTweetDate = (date: Dayjs) => {
   }
   return "";
 };
+
+export const postIdToLink = (postId: string, username: string) => {
+  return `https://twitter.com/${username}/status/${postId}`;
+};

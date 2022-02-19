@@ -7,3 +7,5 @@
 - [ ] Add Youtube/Blog support
 - [ ] Filter by type and tags
 - [ ] Search
+- [ ] Add Image/Links support for twitter
+- [ ] Add twitter threads

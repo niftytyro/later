@@ -112,13 +112,16 @@ const Home: React.FC = () => {
         method: "POST",
         body: { id },
       });
-      const idx = posts.findIndex((post) => post.id === id);
-      if (idx > -1) {
-        setPosts([...posts.slice(0, idx), ...posts.slice(idx + 1)]);
-      }
+      console.log("deleting", id);
+
+      setPosts(posts.filter((post) => post.id !== id));
     },
     [posts]
   );
+
+  useEffect(() => {
+    console.log(posts);
+  }, [posts]);
 
   const navigate = useNavigate();
 
@@ -217,7 +220,7 @@ const Home: React.FC = () => {
             sx={{ columnCount: [1, 2], columnGap: "8px" }}
           >
             {posts.map((post, idx) => (
-              <TweetCard key={idx} post={post} deleteTweet={deleteTweet} />
+              <TweetCard key={post.id} post={post} deleteTweet={deleteTweet} />
             ))}
           </Box>
         )}

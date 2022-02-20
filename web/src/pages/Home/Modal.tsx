@@ -83,6 +83,7 @@ export const NewTweetModal: React.FC<NewTweetModalProps> = ({
             onClick={() => {
               onClose();
               setOptions([]);
+              setTweetUrl("");
             }}
             mr={4}
           >
@@ -95,6 +96,7 @@ export const NewTweetModal: React.FC<NewTweetModalProps> = ({
               await addTweet(tweetUrl, options);
               onClose();
               setOptions([]);
+              setTweetUrl("");
             }}
           >
             Add

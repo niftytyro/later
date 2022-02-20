@@ -107,8 +107,8 @@ const Home: React.FC = () => {
   );
 
   const deleteTweet = useCallback(
-    async (id: number) => {
-      await fetchApi("/posts/delete", {
+    (id: number) => {
+      fetchApi("/posts/delete", {
         method: "POST",
         body: { id },
       });

@@ -54,6 +54,10 @@ class PostUpdate(SQLModel):
     tags: List[str]
 
 
+class PostDelete(SQLModel):
+    id: int
+
+
 class Tags(SQLModel, table=True):
     __table_args__ = (UniqueConstraint("name"),)
     id: Optional[int] = Field(default=None, primary_key=True)

@@ -15,6 +15,8 @@ interface PostProps {
   tags: string[];
   setTags: React.Dispatch<React.SetStateAction<string[]>>;
   removeTag: (idx: number) => void;
+  addTag: (newTag: string) => void;
+  markAsRead: () => void;
 }
 
 export const Post: React.FC<PostProps> = ({
@@ -22,6 +24,8 @@ export const Post: React.FC<PostProps> = ({
   tags,
   setTags,
   removeTag,
+  addTag,
+  markAsRead,
 }) => {
   const [newTag, setNewTag] = useState<string | null>(null);
 
@@ -60,7 +64,7 @@ export const Post: React.FC<PostProps> = ({
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    setTags([...tags, newTag]);
+                    addTag(newTag);
                     setNewTag(null);
                   } else if (e.key === "Escape") {
                     setNewTag(null);
@@ -88,6 +92,7 @@ export const Post: React.FC<PostProps> = ({
               _hover={{ background: "green.700" }}
               textColor="white"
               leftIcon={<CheckIcon />}
+              onClick={markAsRead}
             >
               Mark as read
             </Button>

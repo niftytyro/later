@@ -38,24 +38,37 @@ interface PublicMetricsItemProps {
 
 export const TweetCard: React.FC<{
   post: SavedPost;
-}> = ({ post }) => {
+  deleteTweet: (id: number) => void;
+}> = ({ post, deleteTweet }) => {
   const [tweet, setTweet] = useState<TweetHome>();
   const [tags, setTags] = useState<string[]>([]);
 
-  const update = useCallback(async () => {
-    if (!!tweet) {
-      await fetchApi("/posts/update", {
-        method: "POST",
-        body: { id: tweet?.id, tags },
-      });
-    }
-  }, [tags, tweet]);
+  const update = useCallback(
+    async (updatedTags: string[]) => {
+      if (!!tweet) {
+        await fetchApi("/posts/update", {
+          method: "POST",
+          body: { id: tweet?.id, tags: updatedTags },
+        });
+      }
+    },
+    [tweet]
+  );
 
   const removeTag = useCallback(
     (idx: number) => {
+      update(tags.filter((_, index) => idx !== index));
       setTags(tags.filter((_, index) => idx !== index));
     },
-    [tags]
+    [tags, update]
+  );
+
+  const addTag = useCallback(
+    (newTag: string) => {
+      update([...tags, newTag]);
+      setTags([...tags, newTag]);
+    },
+    [tags, update]
   );
 
   const fetchTweet = useCallback(async () => {
@@ -65,7 +78,7 @@ export const TweetCard: React.FC<{
 
     setTweet({
       ...tweetResponse.data,
-      created_at: dayjs(tweetResponse?.created_at),
+      created_at: dayjs(tweetResponse.data.created_at),
     });
     setTags(tweetResponse.data.tags.map((each: Tag) => each.name));
   }, [post.id, post.type]);
@@ -74,12 +87,18 @@ export const TweetCard: React.FC<{
     fetchTweet();
   }, [fetchTweet]);
 
-  useEffect(() => {
-    update();
-  }, [tags, update]);
-
   return (
-    <Post tags={tags} setTags={setTags} removeTag={removeTag}>
+    <Post
+      tags={tags}
+      setTags={setTags}
+      removeTag={removeTag}
+      addTag={addTag}
+      markAsRead={() => {
+        if (tweet) {
+          deleteTweet(tweet.id);
+        }
+      }}
+    >
       {tweet && (
         <Flex alignItems={"start"} p="4">
           <Image

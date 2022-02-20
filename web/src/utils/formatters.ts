@@ -16,12 +16,12 @@ const monthNames = [
 ];
 
 export const formatTweetDate = (date: Dayjs) => {
-  const today = dayjs();
-  const secsDiff = today.diff(date, "seconds");
-  const minsDiff = today.diff(date, "minutes");
-  const hoursDiff = today.diff(date, "hours");
-  const dateDiff = today.diff(date, "days");
-  const yearDiff = today.diff(date, "years");
+  const now = dayjs();
+  const secsDiff = now.diff(date, "seconds");
+  const minsDiff = now.diff(date, "minutes");
+  const hoursDiff = now.diff(date, "hours");
+  const dateDiff = now.diff(date, "days");
+  const yearDiff = now.diff(date, "years");
 
   if (yearDiff > 0) {
     return `${date.date()} ${monthNames[date.month()]} ${date.year()}`;
@@ -45,7 +45,7 @@ export const formatTweetDate = (date: Dayjs) => {
   if (secsDiff > 0) {
     return `${secsDiff}s`;
   }
-  return "";
+  return "now";
 };
 
 export const postIdToLink = (postId: string, username: string) => {

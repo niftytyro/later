@@ -97,8 +97,24 @@ const Home: React.FC = () => {
         method: "POST",
         body: { url, tags },
       });
+      console.log(post);
+
       if (post.key === "success") {
         setPosts([...posts, post.data]);
+      }
+    },
+    [posts]
+  );
+
+  const deleteTweet = useCallback(
+    async (id: number) => {
+      await fetchApi("/posts/delete", {
+        method: "POST",
+        body: { id },
+      });
+      const idx = posts.findIndex((post) => post.id === id);
+      if (idx > -1) {
+        setPosts([...posts.slice(0, idx), ...posts.slice(idx + 1)]);
       }
     },
     [posts]
@@ -201,7 +217,7 @@ const Home: React.FC = () => {
             sx={{ columnCount: [1, 2], columnGap: "8px" }}
           >
             {posts.map((post, idx) => (
-              <TweetCard key={idx} post={post} />
+              <TweetCard key={idx} post={post} deleteTweet={deleteTweet} />
             ))}
           </Box>
         )}
